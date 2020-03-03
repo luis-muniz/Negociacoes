@@ -50,17 +50,79 @@ class NegociacaoController {
 
     importaNegociacoes() {
 
-        this._service.obterNegociacaoDaSemana((err, negociacoes) => {
-            if (err) {
-                
-                this._mensagem.texto = err;
+        /*
+        const negociacoes = [];
 
-                return;
-            }
+        this._service.obterNegociacaoDaSemana()
+            .then(
+                semana => {
+                    negociacoes.push(...semana);
 
-            negociacoes.forEach(negociacao => this._negociacoes.adiciona(negociacao));
+                    return this._service.obterNegociacaoDaSemanaAnterior();
+                },
+                err => this._mensagem.texto = err
+            )
+            .then(
+                passada => {
+                    negociacoes.push(...passada);
 
-            this._mensagem.texto = 'Negociações importadas com sucesso';
-        });
+                    return this._service.obterNegociacaoDaSemanaRetrasada();
+                },
+                err => this._mensagem.texto = err
+            )
+            .then(
+                retrasada => {
+                    negociacoes.push(...retrasada);
+
+                    negociacoes.forEach(negociacao => this._negociacoes.adiciona(negociacao));
+
+                    this._mensagem.texto = 'Negociacoes importadas com sucesso';
+                },
+                err => this._mensagem.texto = err
+            )
+            .catch(
+                err => this._mensagem.texto = err
+            );
+        */
+
+        this._service
+            .obtemNegociacoesDoPeriodo()
+            .then(negociacoes => {
+                negociacoes
+                    .filter(novaNegociacao => {
+                        
+                        /* Melhor forma*/
+                        return !this._negociacoes.paraArray().some(negociacoesExistente => {
+                            return novaNegociacao.equals(negociacoesExistente)
+                        });
+
+                        /* segunda forma
+                        for(let neg of this._negociacoes.paraArray()){
+                            if (neg.equals(novaNegociacao)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                        */
+
+                        /* terceira forma
+                        let isNeg = true;
+                        this._negociacoes.paraArray().forEach(neg => {
+                            if(neg.equals(novaNegociacao)){
+                                isNeg = false;
+                                return;
+                            }
+                        })
+
+                        return isNeg;
+                        */
+
+                    })
+                    .forEach(negociacao => this._negociacoes.adiciona(negociacao));
+                this._mensagem.texto = 'Negociações do pedíodo importadas com sucesso';
+            })
+            .catch(err => this._mensagem.texto = err);
     }
+
+
 }
